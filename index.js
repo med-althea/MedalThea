@@ -4,12 +4,15 @@ import { client, connection, migrations } from './knexfile.js';
 import knex from 'knex';
 import userRoutes from './src/user/routes/userRoutes.js';
 import quizRoutes from './src/quiz/routes/quizRoutes.js';
+import cors from 'cors';
 
 const db = knex({ client, connection, migrations });
 const app = express();
 app.use(express.json());
 
-const PORT = process.env.PORT || 3000;
+app.use(cors()); // Enable CORS for all origins
+
+const PORT = process.env.PORT || 5000;
 
 // API to return the application name
 app.get('/', (req, res) => {

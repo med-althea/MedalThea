@@ -64,7 +64,7 @@ export const downloadQuizXlsx = async (req, res) => {
 
 export const listQuizzes = async (req, res) => {
   try {
-    const { category, topics, set } = req.body;
+    const { category, topics, set } = { ...req.query, ...req.body };
     let quizzes;
     if(category && !topics && !set){
       quizzes = await quizService.getTopicsList(category);
@@ -83,8 +83,8 @@ export const listQuizzes = async (req, res) => {
 
 export const submitQuiz = async (req, res) => {
   try {
-    const { userId, quizId, submittedAnswers } = req.body;
-    const result = await quizService.submitQuiz(userId, quizId, submittedAnswers);
+    const { userId, quizId, submittedAnswers, incorrectCount, unattemptedCount } = req.body;
+    const result = await quizService.submitQuiz(userId, quizId, submittedAnswers, incorrectCount, unattemptedCount);
     res.status(200).json({ message: 'Quiz submitted', result });
   } catch (error) {
     console.error(error);

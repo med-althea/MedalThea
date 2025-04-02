@@ -7,7 +7,7 @@ const db = knex({ client, connection, migrations });
 
 // User Registration
 const register = async (req, res) => {
-  const { username, email, password, mobile, full_name } = req.body;
+  const { username, email, password, mobile, full_name } = req.body.finalData;
   if (!username || !email || !password || !mobile || !full_name) {
     return res.status(400).json({ message: 'Please provide all required fields' });
   }
@@ -55,7 +55,8 @@ const getUserDetails = async (req, res) => {
       'users.username',
       'users.full_name',
       'users.email',
-      'users.mobile'
+      'users.mobile',
+      'users.created_at',
     ).where({ user_id:userId }).first();
     if (!user) return res.status(400).json({ message: 'Invalid User Id' });
 
@@ -74,7 +75,9 @@ const getUserList = async (req, res) => {
       'users.username',
       'users.full_name',
       'users.email',
-      'users.mobile'
+      'users.mobile',
+      'users.role',
+      'users.created_at',
     );
 
     res.json({users});

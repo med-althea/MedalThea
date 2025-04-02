@@ -63,11 +63,26 @@ const getQuizList = async (category, topics, set) => {
     quizzes.map(async (quiz) => {
       const questions = await db('quiz_questions')
         .where({ quiz_id: quiz.quiz_id })
-        .select('question', 'option_a', 'option_b', 'option_c', 'option_d', 'answer', 'explanation');
-      return { ...quiz, questions };
+        .select('question_id', 'quiz_id', 'question', 'option_a', 'option_b', 'option_c', 'option_d', 'answer', 'explanation');
+  
+      // Transform the options into an array format
+      const formattedQuestions = questions.map((q) => ({
+        question: q.question,
+        options: [
+          { option: q.option_a },
+          { option: q.option_b },
+          { option: q.option_c },
+          { option: q.option_d },
+        ],
+        answer: q.answer,
+        explanation: q.explanation,
+        question_id:q.question_id,
+        quiz_id:q.quiz_id
+      }));
+  
+      return { ...quiz, questions: formattedQuestions };
     })
   );
-
   return quizListWithQuestions;
 };
 
@@ -84,10 +99,10 @@ const getSetsList = async (category, topics) => {
   return {sets: quizSets};
 };
 
-async function submitQuiz(userId, quizId, submittedAnswers) {
+async function submitQuiz(userId, quizId, submittedAnswers, incorrectCount, unattemptedCount) {
   let score = 0;
-  let unattempted = [];
-  let incorrect = [];
+  let unattempted = unattemptedCount;
+  let incorrect = incorrectCount;
   const quizData = await db('quizzes')
   .where('quizzes.quiz_id', quizId)
   .select('quizzes.category', 'quizzes.set', 'quizzes.topics').first();
@@ -102,25 +117,28 @@ async function submitQuiz(userId, quizId, submittedAnswers) {
     const submittedAnswer = submittedMap[q.question_id];
 
     if (!submittedAnswer) {
-      unattempted.push({ questionId: q.question_id });
+      // unattempted.push({ questionId: q.question_id });
     } else if (q.answer !== submittedAnswer) {
-      incorrect.push({
-        questionId: q.question_id,
-        submitted: submittedAnswer,
-        correct: q.answer
-      });
+      // incorrect.push({
+      //   questionId: q.question_id,
+      //   submitted: submittedAnswer,
+      //   correct: q.answer
+      // });
     } else {
       score++;
     }
   });
 
-  // Save results in the database
+  console.log('Result', incorrect, unattempted)
+
+  // // Save results in the database
   await db('user_scores').insert({
     user_id: userId,
     quiz_id: quizId,
     score,
     total_questions: questions.length,
-    unattempted: unattempted.length
+    unattempted: unattempted,
+    incorrect:incorrect
   });
 
   return {
