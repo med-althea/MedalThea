@@ -163,7 +163,7 @@ export const submitQuiz = async (userId, quizId, submittedAnswers) => {
   let incorrect = [];
   const quizData = await db('quizzes')
   .where('quizzes.quiz_id', quizId)
-  .select('quizzes.category', 'quizzes.set', 'quizzes.topics').first();
+  .select('quizzes.category_id', 'quizzes.set_id', 'quizzes.topic_id').first();
 
   // Fetch quiz questions from the database
   const questions = await db('quiz_questions').where('quiz_questions.quiz_id', quizId);
@@ -193,15 +193,16 @@ export const submitQuiz = async (userId, quizId, submittedAnswers) => {
     quiz_id: quizId,
     score,
     total_questions: questions.length,
-    unattempted: unattempted.length
+    unattempted: unattempted.length,
+    incorrect: incorrect.length
   });
 
   return {
     score,
     total: questions.length,
-    category:quizData.category,
-    set:quizData.set,
-    topics:quizData.topics,
+    category:quizData.category_id,
+    set:quizData.set_id,
+    topics:quizData.topic_id,
     unattempted,
     incorrect
   };
@@ -211,7 +212,7 @@ export const submitQuiz = async (userId, quizId, submittedAnswers) => {
 export const getUserScores = async (userId) => {
   return db('user_scores').leftJoin('quizzes', 'user_scores.quiz_id', 'quizzes.quiz_id')
   .where('user_scores.user_id', userId)
-  .select('user_scores.*', 'quizzes.category', 'quizzes.set', 'quizzes.topics');
+  .select('user_scores.*', 'quizzes.category_id', 'quizzes.set_id', 'quizzes.topic_id');
 };
 
 export const getAllCategories = () => db("categories").select("*");
